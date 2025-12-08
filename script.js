@@ -6,9 +6,23 @@ const SUPABASE_ANON_KEY =
 const PRODUCT_BUCKET = "product-images";
 const STORE_TABLE = "store_profile"; // new table for store details
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase client (safe init so कि अगर CDN load ना हो तब भी बाकी JS चले)
+let supabaseClient = null;
+if (window.supabase && typeof window.supabase.createClient === "function") {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+  console.warn("Supabase JS library not loaded – UI चलेगा पर data नहीं आएगा.");
+}
 
 // ----- CART + PRODUCT CACHE -----
+function ensureSupabase() {
+  if (!supabaseClient) {
+    console.warn("Supabase client missing");
+    return false;
+  }
+  return true;
+}
+
 let cart = [];
 let productCache = {}; // id -> product row
 let storeProfile = null; // loaded from Supabase
@@ -356,6 +370,8 @@ Kitna stock add kare? (positive number)`,
 
 // Load products
 async function loadProducts() {
+  if (!ensureSupabase()) return;
+
   const list = document.getElementById("products-list");
   const empty = document.getElementById("products-empty");
   if (!list || !empty) return;
@@ -454,6 +470,8 @@ async function loadProducts() {
 }
 
 async function deleteProduct(id) {
+  if (!ensureSupabase()) return;
+
   if (!confirm("Delete this product?")) return;
   const { error } = await supabaseClient.from("products").delete().eq("id", id);
   if (error) {
@@ -686,6 +704,8 @@ async function printInvoice(order) {
 
 // Orders list with status + buttons + print
 async function loadOrders() {
+  if (!ensureSupabase()) return;
+
   const list = document.getElementById("orders-list");
   const empty = document.getElementById("orders-empty");
   if (!list || !empty) return;
@@ -791,6 +811,8 @@ async function loadOrders() {
 
 // Home stats
 async function loadHome() {
+  if (!ensureSupabase()) return;
+
   const saleEl = document.getElementById("total-sale");
   const ordersEl = document.getElementById("total-orders");
   const lowEl = document.getElementById("low-stock");
@@ -827,6 +849,8 @@ async function loadHome() {
 
 // ----- ORDER SAVE + AUTO STOCK REDUCE -----
 async function saveOrderWithCart(payloadOrder) {
+  if (!ensureSupabase()) return;
+
   // 1) Insert into orders and get id back
   const { data: inserted, error } = await supabaseClient
     .from("orders")
@@ -964,6 +988,8 @@ const storeForm = document.getElementById("store-form");
 const storeStatus = document.getElementById("store-status");
 
 async function loadStoreDetails() {
+  if (!ensureSupabase()) return;
+
   if (!storeForm) return;
 
   if (storeStatus) {
@@ -1096,6 +1122,8 @@ if (btnScrollStore) {
 
 // ---------- CUSTOMERS TAB (from orders) ----------
 async function loadCustomers() {
+  if (!ensureSupabase()) return;
+
   const list = document.getElementById("customers-list");
   const empty = document.getElementById("customers-empty");
   if (!list || !empty) return;
