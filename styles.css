@@ -685,12 +685,13 @@ h2 {
 }
 
 .invoice-qr {
-  width: 80px;
-  height: 80px;
+  width: 200px !important;
+  height: 200px !important;
   object-fit: contain;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
 }
+
 
 .invoice-qr-text {
   font-size: 12px;
@@ -764,4 +765,12 @@ h2 {
     display: block;
     padding: 16px;
   }
+}
+
+.invoice-payment {
+  align-items: flex-start;
+}
+
+.invoice-qr-block {
+  align-items: center;
 }
