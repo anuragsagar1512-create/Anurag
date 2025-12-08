@@ -619,7 +619,8 @@ async function printInvoice(order) {
     storeProfile && storeProfile.gstin ? `GSTIN: ${storeProfile.gstin}` : "";
   const logoUrl = storeProfile && storeProfile.logo_url ? storeProfile.logo_url : "";
   const upiId = storeProfile && storeProfile.upi_id ? storeProfile.upi_id : "";
-  const upiQr = storeProfile && storeProfile.upi_qr_url ? storeProfile.upi_qr_url : "";
+  // Use storeProfile UPI QR URL if present, otherwise fallback to local Navi QR image
+  const upiQr = storeProfile && storeProfile.upi_qr_url ? storeProfile.upi_qr_url : "navi_qr.png";
 
   root.innerHTML = `
     <div class="invoice">
