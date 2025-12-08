@@ -618,9 +618,8 @@ async function printInvoice(order) {
   const storeGstin =
     storeProfile && storeProfile.gstin ? `GSTIN: ${storeProfile.gstin}` : "";
   const logoUrl = storeProfile && storeProfile.logo_url ? storeProfile.logo_url : "";
-  const upiId = storeProfile && storeProfile.upi_id ? storeProfile.upi_id : "7042504514@nyes";
-  // If no UPI QR URL saved in store profile, use embedded QR image (no external file needed)
-  const upiQr = storeProfile && storeProfile.upi_qr_url ? storeProfile.upi_qr_url : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYgAAAGIAQAAAABzOEqLAAAC7ElEQVR4nO2bWW4kMQxDyUHuf2Xmg5TtIIMBAkw7bpfSWXqph1hlaJcp/PDrz0+BJppoookmLiQ+AIB+LgoAxfGpCNF//XrTqp5LfADwfQYBQvSuACDkDRHnFafKcRlBEoAEAiL8UJSF84q9q3o6QQogwSgGuCjHr63qwYQowe5CoPC35OQd5Hhfwv6jbjy9G2WsbLGsNmNrzpTjFgKS6lbrH4958Zly3ELwm0niVBYKdvDrRWfKcRvB+oYE2mLZl3svSIId7+4jmDzQu6I8GdGuVFbrcDmuIEhInFm4YrTiz7NTNlsny3EJkTpJ8sH8iLKCCAQ40pCD5biASHy1BLQCIEjrFQ6y1PHVJkLeECmmivVmOY04kb2rejQh2irRe2BvLpbxQmLf4+W4gVDFVDZT8RnDo1Opu7d+7CFsnmbbw9aLEuPqoWm6DpbjAsI+gdMelf9w5yNZepSF3Y96NVH9KAJUarr1C+IaZ21c1cMJVtZHVdeJ1cTNG6xM/WQ5riGsERhp+Kjo+ok/ZvuPXUQ1O0RJpRNRDFXZRLtX9VgiZSoXrkbdxA4kdswOZuuqHkxYOcp1u7IukqON7i3qfHAb4fuesgjLgbjsq6omtn68nBjDVnX/K9sYacgcMGl7tZNgmiBjJ0ZFcdiqtlebCE/DgaScFvrDtAirhd7x7uuJOV9SNfe8yFvpjQxN6f7HawlWf6OGQzNUUl5jKV5lzuRMOW4hOG46gBqblgdFl1ZUqoy9H1uI5ILI9O44gABPOoz+bcdXLyemfmgW3cV6QOvmtH7sIcpjs1qCSM1Xqfeq+1GbiC/no0oZHP3C04ke+5k7daYctxBfz0ctgRVyMGeNfzu+ejmR8wZrdBsXAqh6tlV637aqJgC4sJtO7aj2+jznKKG8hRy3EMrUdE392Fpl0l2ZQHkDOd6fSNGENdLOjPhgnFxT13f3+Y+RYtSMu3LeNuEWlzTkTDluIb6fj/r//6OJJppooon7iE9/vJja3W5eMwAAAABJRU5ErkJggg==";
+  const upiId = storeProfile && storeProfile.upi_id ? storeProfile.upi_id : "";
+  const upiQr = storeProfile && storeProfile.upi_qr_url ? storeProfile.upi_qr_url : "";
 
   root.innerHTML = `
     <div class="invoice">
@@ -701,96 +700,6 @@ async function printInvoice(order) {
   `;
 
   window.print();
-
-async function shareInvoice(order) {
-  try {
-    if (!navigator.share) {
-      alert("Share is not supported on this device.");
-      return;
-    }
-    if (!ensureSupabase()) return;
-
-    // Fetch order items for a simple summary
-    let items = [];
-    const { data, error } = await supabaseClient
-      .from("order_items")
-      .select("*")
-      .eq("order_id", order.id);
-
-    if (!error && data) {
-      items = data;
-    }
-
-    const created = order.created_at
-      ? new Date(order.created_at).toLocaleString()
-      : "";
-
-    const storeName =
-      (storeProfile && storeProfile.store_name) || "My Quick Mart";
-    const storeLine =
-      storeProfile && storeProfile.address_line
-        ? `${storeProfile.address_line}${
-            storeProfile.city ? ", " + storeProfile.city : ""
-          }${storeProfile.pincode ? " - " + storeProfile.pincode : ""}`
-        : "";
-    const upiId =
-      (storeProfile && storeProfile.upi_id) || "7042504514@nyes";
-
-    let lines = [];
-
-    lines.push(storeName);
-    if (storeLine) lines.push(storeLine);
-    lines.push("");
-    lines.push(`Invoice #${order.id}${created ? " · " + created : ""}`);
-    lines.push(
-      `Customer: ${order.customer_name || "Customer"}${
-        order.customer_phone ? " · " + order.customer_phone : ""
-      }`
-    );
-    if (order.customer_address) {
-      lines.push(`Address: ${order.customer_address}`);
-    }
-    lines.push("");
-
-    if (items.length > 0) {
-      lines.push("Items:");
-      items.forEach((it, idx) => {
-        const qty = it.quantity || 1;
-        const price = Number(it.price || 0);
-        const total = price * qty;
-        const name = it.product_name || it.name || "Item";
-        lines.push(
-          `${idx + 1}. ${name} x${qty} – ₹${total.toFixed(2)}`
-        );
-      });
-      lines.push("");
-    }
-
-    const total = Number(order.total_amount || 0);
-    lines.push(`Total: ₹${total.toFixed(2)}`);
-
-    if (upiId) {
-      lines.push("");
-      lines.push(`Pay via UPI: ${upiId}`);
-      lines.push(
-        `UPI link: upi://pay?pa=${encodeURIComponent(
-          upiId
-        )}&pn=${encodeURIComponent(storeName)}`
-      );
-    }
-
-    const text = lines.join("\n");
-
-    await navigator.share({
-      title: `Invoice #${order.id} - ${storeName}`,
-      text,
-    });
-  } catch (err) {
-    console.error("Share invoice error", err);
-    alert("Unable to share invoice on this device.");
-  }
-}
-
 }
 
 // Orders list with status + buttons + print
@@ -895,7 +804,7 @@ async function loadOrders() {
     printBtn.addEventListener("click", () => printInvoice(o));
     actionsRow.appendChild(printBtn);
 
-    // Share button (uses Web Share API on mobile)
+    // Share button - opens WhatsApp with invoice text
     const shareBtn = document.createElement("button");
     shareBtn.className = "btn small primary-soft";
     shareBtn.textContent = "Share";
@@ -1339,3 +1248,88 @@ async function loadCustomers() {
   ]);
   updateCartUI();
 })();
+
+async function shareInvoice(order) {
+  try {
+    if (!ensureSupabase()) return;
+
+    // Fetch order items
+    let items = [];
+    const { data, error } = await supabaseClient
+      .from("order_items")
+      .select("*")
+      .eq("order_id", order.id);
+
+    if (!error && data) {
+      items = data;
+    }
+
+    const created = order.created_at
+      ? new Date(order.created_at).toLocaleString()
+      : "";
+
+    const storeName =
+      (storeProfile && storeProfile.store_name) || "My Quick Mart";
+    const storeLine =
+      storeProfile && storeProfile.address_line
+        ? `${storeProfile.address_line}${
+            storeProfile.city ? ", " + storeProfile.city : ""
+          }${storeProfile.pincode ? " - " + storeProfile.pincode : ""}`
+        : "";
+    const upiId =
+      (storeProfile && storeProfile.upi_id) || "7042504514@nyes";
+
+    let lines = [];
+
+    lines.push(storeName);
+    if (storeLine) lines.push(storeLine);
+    lines.push("");
+    lines.push(`Invoice #${order.id}${created ? " · " + created : ""}`);
+    lines.push(
+      `Customer: ${order.customer_name || "Customer"}${
+        order.customer_phone ? " · " + order.customer_phone : ""
+      }`
+    );
+    if (order.customer_address) {
+      lines.push(`Address: ${order.customer_address}`);
+    }
+    lines.push("");
+
+    if (items.length > 0) {
+      lines.push("Items:");
+      items.forEach((it, idx) => {
+        const qty = it.quantity || 1;
+        const price = Number(it.price || 0);
+        const total = price * qty;
+        const name = it.product_name || it.name || "Item";
+        lines.push(
+          `${idx + 1}. ${name} x${qty} – ₹${total.toFixed(2)}`
+        );
+      });
+      lines.push("");
+    }
+
+    const total = Number(order.total_amount || 0);
+    lines.push(`Total: ₹${total.toFixed(2)}`);
+
+    if (upiId) {
+      lines.push("");
+      lines.push(`Pay via UPI: ${upiId}`);
+      lines.push(
+        `UPI link: upi://pay?pa=${encodeURIComponent(
+          upiId
+        )}&pn=${encodeURIComponent(storeName)}`
+      );
+    }
+
+    const text = lines.join("\n");
+    const encoded = encodeURIComponent(text);
+    const waUrl = `https://wa.me/?text=${encoded}`;
+
+    window.open(waUrl, "_blank");
+  } catch (err) {
+    console.error("Share invoice error", err);
+    alert("Unable to share invoice.");
+  }
+}
+
