@@ -618,8 +618,9 @@ async function printInvoice(order) {
   const storeGstin =
     storeProfile && storeProfile.gstin ? `GSTIN: ${storeProfile.gstin}` : "";
   const logoUrl = storeProfile && storeProfile.logo_url ? storeProfile.logo_url : "";
-  const upiId = storeProfile && storeProfile.upi_id ? storeProfile.upi_id : "";
-  const upiQr = storeProfile && storeProfile.upi_qr_url ? storeProfile.upi_qr_url : "";
+  const upiId = storeProfile && storeProfile.upi_id ? storeProfile.upi_id : "7042504514@nyes";
+  // If no UPI QR URL saved in store profile, use embedded QR image (no external file needed)
+  const upiQr = storeProfile && storeProfile.upi_qr_url ? storeProfile.upi_qr_url : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYgAAAGIAQAAAABzOEqLAAAC7ElEQVR4nO2bWW4kMQxDyUHuf2Xmg5TtIIMBAkw7bpfSWXqph1hlaJcp/PDrz0+BJppoookmLiQ+AIB+LgoAxfGpCNF//XrTqp5LfADwfQYBQvSuACDkDRHnFafKcRlBEoAEAiL8UJSF84q9q3o6QQogwSgGuCjHr63qwYQowe5CoPC35OQd5Hhfwv6jbjy9G2WsbLGsNmNrzpTjFgKS6lbrH4958Zly3ELwm0niVBYKdvDrRWfKcRvB+oYE2mLZl3svSIId7+4jmDzQu6I8GdGuVFbrcDmuIEhInFm4YrTiz7NTNlsny3EJkTpJ8sH8iLKCCAQ40pCD5biASHy1BLQCIEjrFQ6y1PHVJkLeECmmivVmOY04kb2rejQh2irRe2BvLpbxQmLf4+W4gVDFVDZT8RnDo1Opu7d+7CFsnmbbw9aLEuPqoWm6DpbjAsI+gdMelf9w5yNZepSF3Y96NVH9KAJUarr1C+IaZ21c1cMJVtZHVdeJ1cTNG6xM/WQ5riGsERhp+Kjo+ok/ZvuPXUQ1O0RJpRNRDFXZRLtX9VgiZSoXrkbdxA4kdswOZuuqHkxYOcp1u7IukqON7i3qfHAb4fuesgjLgbjsq6omtn68nBjDVnX/K9sYacgcMGl7tZNgmiBjJ0ZFcdiqtlebCE/DgaScFvrDtAirhd7x7uuJOV9SNfe8yFvpjQxN6f7HawlWf6OGQzNUUl5jKV5lzuRMOW4hOG46gBqblgdFl1ZUqoy9H1uI5ILI9O44gABPOoz+bcdXLyemfmgW3cV6QOvmtH7sIcpjs1qCSM1Xqfeq+1GbiC/no0oZHP3C04ke+5k7daYctxBfz0ctgRVyMGeNfzu+ejmR8wZrdBsXAqh6tlV637aqJgC4sJtO7aj2+jznKKG8hRy3EMrUdE392Fpl0l2ZQHkDOd6fSNGENdLOjPhgnFxT13f3+Y+RYtSMu3LeNuEWlzTkTDluIb6fj/r//6OJJppooon7iE9/vJja3W5eMwAAAABJRU5ErkJggg==";
 
   root.innerHTML = `
     <div class="invoice">
