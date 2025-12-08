@@ -1,23 +1,415 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Manage Tab Demo</title>
-  <style>
-    .manage-item { padding:10px; margin:8px; background:#eee; cursor:pointer; width:200px; border-radius:8px; }
-    .manage-title { font-weight:bold; }
-  </style>
+  <meta charset="UTF-8" />
+  <title>My Quick Mart – POS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h2>Manage Tab Buttons</h2>
+  <header class="app-header">
+    <div class="title">
+      <span class="logo">🛒</span>
+      <div>
+        <h1>My Quick Mart</h1>
+        <p class="muted small">Realtime dashboard + simple POS</p>
+      </div>
+    </div>
+  </header>
 
-  <div class="manage-item">
-    <span class="manage-title">Store details</span>
+  <!-- HOME -->
+  <main class="tab-page active" id="tab-home">
+    <section class="section">
+      <h2>Business summary</h2>
+      <p class="muted small">Data from Supabase (orders + products)</p>
+      <div class="grid">
+        <div class="card">
+          <p class="label">Total sale</p>
+          <p class="value" id="total-sale">₹0</p>
+        </div>
+        <div class="card">
+          <p class="label">Orders</p>
+          <p class="value" id="total-orders">0</p>
+        </div>
+        <div class="card">
+          <p class="label">Low stock</p>
+          <p class="value" id="low-stock">0</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- INVOICE TAB (info) -->
+  <main class="tab-page" id="tab-invoice">
+    <section class="section">
+      <h2>Invoice</h2>
+      <p class="muted small">
+        Go to <b>Orders</b> tab → tap <b>Print</b> on any order to generate a printable invoice.
+      </p>
+      <div class="card">
+        <p class="muted small">
+          Invoice print is optimised for thermal / A4 printers. Use your browser's print menu to save as PDF or print.
+        </p>
+        <p class="muted small" style="margin-top:6px;">
+          Store logo, address and UPI QR code are taken from <b>Manage → Store details</b>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ORDERS -->
+  <main class="tab-page" id="tab-orders">
+    <section class="section header-row">
+      <h2>Orders</h2>
+      <button id="btn-quick-order" class="btn">+ Quick test order</button>
+    </section>
+
+    <!-- CART PREVIEW -->
+    <section class="section">
+      <div class="card cart-card">
+        <div class="cart-header">
+          <div>
+            <p class="label">Cart</p>
+            <p class="muted small">Tap items in Catalogue → Add to cart</p>
+          </div>
+          <span class="cart-summary" id="cart-summary">₹0 · 0 items</span>
+        </div>
+        <div id="cart-list" class="list cart-list"></div>
+        <p id="cart-empty" class="muted small">Cart is empty.</p>
+        <button class="btn small danger-soft full" id="cart-clear">Clear cart</button>
+      </div>
+    </section>
+
+    <!-- Delivery-style order form -->
+    <section class="section">
+      <div class="card delivery-card">
+        <p class="label">New delivery order</p>
+        <p class="muted small">Customer name, phone, address + cart total. Stock auto-reduces after order.</p>
+
+        <form id="delivery-form" class="form" style="margin-top: 8px;">
+          <div class="field-row">
+            <label class="field">
+              <span>Customer name</span>
+              <input type="text" id="delivery-name" placeholder="e.g. Rahul Verma" />
+            </label>
+            <label class="field">
+              <span>Phone</span>
+              <input type="tel" id="delivery-phone" inputmode="tel" placeholder="10-digit mobile" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Delivery address</span>
+            <textarea id="delivery-address" rows="2" placeholder="House no, street, area, landmark"></textarea>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Payment method</span>
+              <select id="delivery-payment">
+                <option value="cash">Cash</option>
+                <option value="upi">UPI</option>
+                <option value="card">Card</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Order total (₹)</span>
+              <input type="number" id="delivery-amount" min="0" step="1" placeholder="0" />
+            </label>
+          </div>
+
+          <button type="submit" class="btn primary full" style="margin-top: 6px;">
+            Create delivery order
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div id="orders-list" class="list"></div>
+      <p id="orders-empty" class="muted center small">No orders yet.</p>
+    </section>
+  </main>
+
+  <!-- CUSTOMERS TAB -->
+  <main class="tab-page" id="tab-customers">
+    <section class="section header-row">
+      <h2>Customers</h2>
+      <p class="muted small">Auto-generated from your orders.</p>
+    </section>
+
+    <section class="section">
+      <div id="customers-list" class="list"></div>
+      <p id="customers-empty" class="muted center small">No customers yet. Create some orders first.</p>
+    </section>
+  </main>
+
+  <!-- CATALOGUE -->
+  <main class="tab-page" id="tab-catalogue">
+    <section class="section header-row">
+      <h2>Catalogue</h2>
+      <button id="btn-open-product" class="btn primary">+ Add product</button>
+    </section>
+    <section class="section">
+      <div id="products-list" class="list"></div>
+      <p id="products-empty" class="muted center small">No products yet. Add one.</p>
+    </section>
+  </main>
+
+  <!-- MANAGE -->
+  <main class="tab-page" id="tab-manage">
+    <section class="section">
+      <h2>Manage</h2>
+    </section>
+
+    <!-- STORE DETAILS FORM -->
+    <section class="section">
+      <div class="card" id="store-card">
+        <p class="label">Store details</p>
+        <p class="muted small">
+          Store name, address, GST, UPI & bank details. Used on invoice header & QR.
+        </p>
+
+        <form id="store-form" class="form" style="margin-top:10px;">
+          <div class="field-row">
+            <label class="field">
+              <span>Store name</span>
+              <input type="text" id="store-name" placeholder="My Quick Mart" />
+            </label>
+            <label class="field">
+              <span>Phone</span>
+              <input type="tel" id="store-phone" placeholder="10-digit mobile" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="store-email" placeholder="store@example.com" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Business category</span>
+              <input type="text" id="store-category" placeholder="Individual / Proprietor" />
+            </label>
+            <label class="field">
+              <span>GSTIN</span>
+              <input type="text" id="store-gstin" placeholder="Optional" />
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>FSSAI</span>
+              <input type="text" id="store-fssai" placeholder="Optional" />
+            </label>
+            <label class="field">
+              <span>UPI ID</span>
+              <input type="text" id="store-upi" placeholder="yourupi@bank" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Address line</span>
+            <input type="text" id="store-address-line" placeholder="Shop no, street, area" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>City</span>
+              <input type="text" id="store-city" placeholder="New Delhi" />
+            </label>
+            <label class="field">
+              <span>Pincode</span>
+              <input type="text" id="store-pincode" placeholder="1100xx" />
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Bank A/C name</span>
+              <input type="text" id="store-bank-name" placeholder="Account holder name" />
+            </label>
+            <label class="field">
+              <span>A/C number</span>
+              <input type="text" id="store-bank-account" placeholder="XXXXXXXXXXXX" />
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>IFSC</span>
+              <input type="text" id="store-bank-ifsc" placeholder="SBIN0XXXXXX" />
+            </label>
+            <label class="field">
+              <span>UPI QR image URL</span>
+              <input type="text" id="store-upi-qr" placeholder="https://..." />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Logo image URL</span>
+            <input type="text" id="store-logo" placeholder="https://..." />
+          </label>
+
+          <div id="store-status" class="muted small" style="margin-top:2px;">
+            Not saved yet.
+          </div>
+
+          <button type="submit" class="btn primary full" style="margin-top:8px;">
+            Save store profile
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SIMPLE MANAGE SHORTCUTS -->
+    <section class="section">
+      <div class="manage-list">
+        <button class="manage-item" id="btn-scroll-store">
+          <span class="manage-icon">🏪</span>
+          <span class="manage-text">
+            <span class="manage-title">Store details</span>
+            <span class="manage-subtitle">Store name, address & contact</span>
+          </span>
+        </button>
+        <button class="manage-item">
+          <span class="manage-icon">💳</span>
+          <span class="manage-text">
+            <span class="manage-title">Payment methods</span>
+            <span class="manage-subtitle">Cash, UPI & bank details</span>
+          </span>
+        </button>
+        <button class="manage-item">
+          <span class="manage-icon">🛵</span>
+          <span class="manage-text">
+            <span class="manage-title">Delivery settings</span>
+            <span class="manage-subtitle">Radius, fees & timings (future)</span>
+          </span>
+        </button>
+        <button class="manage-item">
+          <span class="manage-icon">🛡️</span>
+          <span class="manage-text">
+            <span class="manage-title">KYC & verification</span>
+            <span class="manage-subtitle">Basic business verification (future)</span>
+          </span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- FLOATING CART BUTTON -->
+  <button id="floating-cart" class="floating-cart hidden">
+    <span class="floating-cart-icon">🛒</span>
+    <span id="float-cart-text">₹0 · 0</span>
+  </button>
+
+  <!-- PRINT INVOICE ROOT (only visible when printing) -->
+  <div id="print-root" class="print-root"></div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="tabs bottom-tabs">
+    <button class="tab-btn active" data-tab="home">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">Home</span>
+    </button>
+    <button class="tab-btn" data-tab="invoice">
+      <span class="tab-icon">🧾</span>
+      <span class="tab-label">Invoice</span>
+    </button>
+    <button class="tab-btn" data-tab="orders">
+      <span class="tab-icon">🛍</span>
+      <span class="tab-label">Orders</span>
+    </button>
+    <button class="tab-btn" data-tab="customers">
+      <span class="tab-icon">👥</span>
+      <span class="tab-label">Customers</span>
+    </button>
+    <button class="tab-btn" data-tab="catalogue">
+      <span class="tab-icon">📦</span>
+      <span class="tab-label">Catalogue</span>
+    </button>
+    <button class="tab-btn" data-tab="manage">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">Manage</span>
+    </button>
+  </nav>
+
+  <!-- ADD PRODUCT MODAL -->
+  <div class="backdrop hidden" id="product-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add product</h3>
+        <button class="icon-btn" id="product-close">✕</button>
+      </div>
+      <form id="product-form" class="form">
+        <div class="image-row">
+          <label for="product-image" class="image-box">
+            <span id="image-label">Choose photo</span>
+            <img id="image-preview" alt="Preview" class="hidden" />
+          </label>
+          <input type="file" id="product-image" accept="image/*" hidden />
+        </div>
+
+        <label class="field">
+          <span>Name*</span>
+          <input type="text" id="product-name" required />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Sale price*</span>
+            <input type="number" id="product-price" min="0" required />
+          </label>
+          <label class="field">
+            <span>MRP</span>
+            <input type="number" id="product-mrp" min="0" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Category</span>
+          <input type="text" id="product-category" placeholder="Snacks, Grocery…" />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Quantity (stock)</span>
+            <input type="number" id="product-stock" min="0" value="0" />
+          </label>
+          <label class="field">
+            <span>Unit</span>
+            <select id="product-unit">
+              <option value="Pieces">Pieces</option>
+              <option value="Kg">Kg</option>
+              <option value="Gram">Gram</option>
+              <option value="Litre">Litre</option>
+              <option value="Pack">Pack</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Color</span>
+            <input type="text" id="product-color" />
+          </label>
+          <label class="field">
+            <span>Size</span>
+            <input type="text" id="product-size" />
+          </label>
+        </div>
+
+        <div id="product-error" class="error hidden"></div>
+
+        <button class="btn primary full" type="submit" id="product-save">Save</button>
+      </form>
+    </div>
   </div>
 
-  <div class="manage-item">
-    <span class="manage-title">Payment methods</span>
-  </div>
+  <div id="toast" class="toast hidden"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
