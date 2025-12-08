@@ -701,6 +701,96 @@ async function printInvoice(order) {
   `;
 
   window.print();
+
+async function shareInvoice(order) {
+  try {
+    if (!navigator.share) {
+      alert("Share is not supported on this device.");
+      return;
+    }
+    if (!ensureSupabase()) return;
+
+    // Fetch order items for a simple summary
+    let items = [];
+    const { data, error } = await supabaseClient
+      .from("order_items")
+      .select("*")
+      .eq("order_id", order.id);
+
+    if (!error && data) {
+      items = data;
+    }
+
+    const created = order.created_at
+      ? new Date(order.created_at).toLocaleString()
+      : "";
+
+    const storeName =
+      (storeProfile && storeProfile.store_name) || "My Quick Mart";
+    const storeLine =
+      storeProfile && storeProfile.address_line
+        ? `${storeProfile.address_line}${
+            storeProfile.city ? ", " + storeProfile.city : ""
+          }${storeProfile.pincode ? " - " + storeProfile.pincode : ""}`
+        : "";
+    const upiId =
+      (storeProfile && storeProfile.upi_id) || "7042504514@nyes";
+
+    let lines = [];
+
+    lines.push(storeName);
+    if (storeLine) lines.push(storeLine);
+    lines.push("");
+    lines.push(`Invoice #${order.id}${created ? " · " + created : ""}`);
+    lines.push(
+      `Customer: ${order.customer_name || "Customer"}${
+        order.customer_phone ? " · " + order.customer_phone : ""
+      }`
+    );
+    if (order.customer_address) {
+      lines.push(`Address: ${order.customer_address}`);
+    }
+    lines.push("");
+
+    if (items.length > 0) {
+      lines.push("Items:");
+      items.forEach((it, idx) => {
+        const qty = it.quantity || 1;
+        const price = Number(it.price || 0);
+        const total = price * qty;
+        const name = it.product_name || it.name || "Item";
+        lines.push(
+          `${idx + 1}. ${name} x${qty} – ₹${total.toFixed(2)}`
+        );
+      });
+      lines.push("");
+    }
+
+    const total = Number(order.total_amount || 0);
+    lines.push(`Total: ₹${total.toFixed(2)}`);
+
+    if (upiId) {
+      lines.push("");
+      lines.push(`Pay via UPI: ${upiId}`);
+      lines.push(
+        `UPI link: upi://pay?pa=${encodeURIComponent(
+          upiId
+        )}&pn=${encodeURIComponent(storeName)}`
+      );
+    }
+
+    const text = lines.join("\n");
+
+    await navigator.share({
+      title: `Invoice #${order.id} - ${storeName}`,
+      text,
+    });
+  } catch (err) {
+    console.error("Share invoice error", err);
+    alert("Unable to share invoice on this device.");
+  }
+}
+
 }
 
 // Orders list with status + buttons + print
@@ -804,6 +894,13 @@ async function loadOrders() {
     printBtn.textContent = "Print";
     printBtn.addEventListener("click", () => printInvoice(o));
     actionsRow.appendChild(printBtn);
+
+    // Share button (uses Web Share API on mobile)
+    const shareBtn = document.createElement("button");
+    shareBtn.className = "btn small primary-soft";
+    shareBtn.textContent = "Share";
+    shareBtn.addEventListener("click", () => shareInvoice(o));
+    actionsRow.appendChild(shareBtn);
 
     card.appendChild(actionsRow);
     list.appendChild(card);
