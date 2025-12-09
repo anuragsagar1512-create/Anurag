@@ -617,4 +617,4 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
 
 // Start
-checkSession();
+initData();
