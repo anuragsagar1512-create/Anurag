@@ -1,109 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>My QuickMart POS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8"/>
+<title>Full Product Manager</title>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
-  <div id="app">
-    <header class="top-bar">
-      <h1>Orders</h1>
-      <span id="order-count">0</span>
-    </header>
+<body class="light">
 
-    <main class="layout">
-      <!-- LEFT: ORDERS + CART -->
-      <section class="orders-section">
-        <div class="search-box">
-          <input id="search-input" type="text" placeholder="Search products..." />
-        </div>
+<header>
+  <button id="theme-toggle">🌓</button>
+  <h1>Product Manager – Full Version</h1>
+</header>
 
-        <div class="cart">
-          <h2>Cart</h2>
-          <p id="cart-empty">Cart is empty</p>
-          <div id="cart-items"></div>
-          <div class="cart-summary">
-            <div>Items: <span id="cart-items-count">0</span></div>
-            <div>Total: ₹<span id="cart-total">0</span></div>
-          </div>
-          <button id="btn-place-order" class="primary-btn">Place Order</button>
-        </div>
-      </section>
+<section class="top-controls">
+  <input id="search" placeholder="Search products...">
+  <select id="category-filter"></select>
+  <button id="manage-categories">Categories</button>
+  <button id="add-product">+ Add Product</button>
+</section>
 
-      <!-- RIGHT: CATALOGUE -->
-      <section class="catalogue-section">
-        <div class="section-header">
-          <h2>Catalogue</h2>
-          <button id="btn-new-product" class="secondary-btn">+ New Product</button>
-        </div>
+<section id="product-list"></section>
 
-        <div class="search-box small">
-          <input id="catalogue-search" type="text" placeholder="Search products..." />
-        </div>
+<!-- Product Modal -->
+<div id="product-modal" class="hidden modal">
+  <div class="modal-box">
+    <h2 id="modal-title">Add Product</h2>
 
-        <div id="low-stock-warning" class="warning hidden">
-          ⚠ Some items are low in stock. Check highlighted products.
-        </div>
+    <div id="image-preview" class="img-preview">Tap to upload</div>
+    <input type="file" id="product-image" accept="image/*" hidden/>
 
-        <div id="products-list" class="products-grid">
-          <!-- products go here -->
-        </div>
+    <label>Name</label><input id="prod-name"/>
 
-        <p id="no-products" class="muted">No products found.</p>
-      </section>
-    </main>
+    <label>Price</label><input id="prod-price" type="number"/>
 
-    <!-- Bottom Tabs (placeholder) -->
-    <nav class="bottom-nav">
-      <button class="nav-btn active">Home</button>
-      <button class="nav-btn">Orders</button>
-      <button class="nav-btn">Items</button>
-      <button class="nav-btn">Expenses</button>
-      <button class="nav-btn">People</button>
-      <button class="nav-btn">Manage</button>
-    </nav>
+    <label>Category</label><select id="prod-category"></select>
+
+    <label>Stock</label><input id="prod-stock" type="number"/>
+
+    <label>Low Stock Alert</label><input id="prod-low" type="number"/>
+
+    <button id="save-product">Save</button>
+    <button id="delete-product" class="danger hidden">Delete</button>
+    <button id="close-modal">Cancel</button>
   </div>
+</div>
 
-  <!-- BACKGROUND OVERLAY -->
-  <div id="popup-overlay" class="overlay hidden"></div>
-
-  <!-- PRODUCT POPUP -->
-  <div id="product-popup" class="popup hidden">
-    <div class="popup-content">
-      <h2 id="popup-title">New Product</h2>
-
-      <!-- Image -->
-      <div id="img-picker" class="img-picker">
-        <span id="img-text">Tap to upload image</span>
-        <img id="product-image" class="upload-img hidden" alt="Product image" />
-        <input id="img-file" type="file" accept="image/*" class="hidden" />
-      </div>
-
-      <input id="p-name" placeholder="Name*" />
-      <input id="p-price" placeholder="Price (₹)*" type="number" />
-      <input id="p-category" placeholder="Category" />
-
-      <!-- STOCK WITH + / - -->
-      <label class="field-label">Stock</label>
-      <div class="stock-row">
-        <button type="button" id="stock-minus" class="round-btn">-</button>
-        <input id="p-stock" type="number" value="0" />
-        <button type="button" id="stock-plus" class="round-btn">+</button>
-      </div>
-
-      <input id="p-low-stock" placeholder="Low stock alert at" type="number" />
-
-      <div class="btn-row">
-        <button id="delete-btn" class="delete-btn">Delete</button>
-        <button id="save-btn" class="save-btn">Save</button>
-        <button id="cancel-btn" class="cancel-btn">Cancel</button>
-      </div>
-    </div>
+<!-- Category Modal -->
+<div id="category-modal" class="hidden modal">
+  <div class="modal-box">
+    <h2>Manage Categories</h2>
+    <div id="category-list"></div>
+    <input id="new-category" placeholder="New category..."/>
+    <button id="add-category-btn">Add</button>
+    <button id="close-category-modal">Close</button>
   </div>
+</div>
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="app.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
