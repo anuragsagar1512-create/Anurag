@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
-const SUPABASE_URL = "https://YOUR_PROJECT_URL.supabase.co"; 
-const SUPABASE_ANON_KEY = "YOUR_ANON_KEY"; 
+const SUPABASE_URL = "https://hfdkarlboycxyosmzdge.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZGthcmxib3ljeHlvc216ZGdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwODEzNjcsImV4cCI6MjA4MDY1NzM2N30.ndZ9hv_o1zUstIrtRXWvHsUFCPj3Pwn1r3-V3Gp7Hgo";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -65,6 +65,7 @@ if (loginForm) {
       err.textContent = "Login Failed: " + error.message;
       err.classList.remove("hidden");
     } else {
+      err.classList.add("hidden");
       showApp(data.user);
     }
   });
