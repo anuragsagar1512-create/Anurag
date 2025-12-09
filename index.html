@@ -1,62 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<title>Full Product Manager</title>
-<link rel="stylesheet" href="style.css"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <title>My Quick Mart – Smart POS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="light">
+<body class="dark">
 
-<header>
-  <button id="theme-toggle">🌓</button>
-  <h1>Product Manager – Full Version</h1>
-</header>
+  <header class="app-header">
+    <div>
+      <h1 class="app-title">My Quick Mart</h1>
+      <p class="app-subtitle">Smart POS System</p>
+    </div>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn">☀️</button>
+    </div>
+  </header>
 
-<section class="top-controls">
-  <input id="search" placeholder="Search products...">
-  <select id="category-filter"></select>
-  <button id="manage-categories">Categories</button>
-  <button id="add-product">+ Add Product</button>
-</section>
+  <main class="app-main">
 
-<section id="product-list"></section>
+    <!-- HOME TAB -->
+    <section id="tab-home" class="tab-page active">
+      <h2>Dashboard</h2>
+      <div class="cards-grid">
+        <div class="card">
+          <p class="muted">Total Sales</p>
+          <h3 id="home-total-sales">₹0</h3>
+        </div>
+        <div class="card">
+          <p class="muted">Total Orders</p>
+          <h3 id="home-total-orders">0</h3>
+        </div>
+        <div class="card">
+          <p class="muted">Low Stock Items</p>
+          <h3 id="home-low-stock">0</h3>
+        </div>
+      </div>
+    </section>
 
-<!-- Product Modal -->
-<div id="product-modal" class="hidden modal">
-  <div class="modal-box">
-    <h2 id="modal-title">Add Product</h2>
+    <!-- ORDERS TAB -->
+    <section id="tab-orders" class="tab-page">
+      <h2>Orders</h2>
+      <div class="orders-layout">
+        <div class="orders-products">
+          <div class="filters">
+            <div class="input-group">
+              <span class="input-icon">🔍</span>
+              <input id="order-product-search" placeholder="Search products..." />
+            </div>
+          </div>
+          <div id="order-products-list" class="products-list small"></div>
+        </div>
 
-    <div id="image-preview" class="img-preview">Tap to upload</div>
-    <input type="file" id="product-image" accept="image/*" hidden/>
+        <div class="orders-cart">
+          <h3>Cart</h3>
+          <div id="cart-empty" class="muted small">Cart is empty</div>
+          <div id="cart-list"></div>
+          <div class="cart-footer">
+            <div>
+              <p class="muted small">Items</p>
+              <p id="cart-items-count">0</p>
+            </div>
+            <div>
+              <p class="muted small">Total</p>
+              <p id="cart-total">₹0</p>
+            </div>
+          </div>
+          <button id="btn-place-order" class="btn primary wide">Place Order</button>
+        </div>
+      </div>
+    </section>
 
-    <label>Name</label><input id="prod-name"/>
+    <!-- ITEMS TAB -->
+    <section id="tab-items" class="tab-page">
+      <div class="catalogue-header">
+        <h2>Catalogue</h2>
+        <button id="btn-add-product" class="btn primary">+ Product</button>
+      </div>
 
-    <label>Price</label><input id="prod-price" type="number"/>
+      <div class="filters">
+        <div class="input-group">
+          <span class="input-icon">🔍</span>
+          <input id="items-search" placeholder="Search products..." />
+        </div>
+        <select id="items-category-filter" class="select"></select>
+      </div>
 
-    <label>Category</label><select id="prod-category"></select>
+      <div id="low-stock-banner" class="low-stock-banner hidden">
+        ⚠️ Some items are low in stock. Check highlighted products.
+      </div>
 
-    <label>Stock</label><input id="prod-stock" type="number"/>
+      <div id="items-empty" class="muted" style="margin-top:8px;">No products found.</div>
+      <div id="items-list" class="products-list"></div>
+    </section>
 
-    <label>Low Stock Alert</label><input id="prod-low" type="number"/>
+    <!-- PLACEHOLDER TABS -->
+    <section id="tab-expenses" class="tab-page">
+      <h2>Expenses</h2>
+      <p class="muted small">Coming soon...</p>
+    </section>
 
-    <button id="save-product">Save</button>
-    <button id="delete-product" class="danger hidden">Delete</button>
-    <button id="close-modal">Cancel</button>
+    <section id="tab-people" class="tab-page">
+      <h2>People</h2>
+      <p class="muted small">Coming soon...</p>
+    </section>
+
+    <section id="tab-manage" class="tab-page">
+      <h2>Manage</h2>
+      <p class="muted small">Coming soon...</p>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="home">Home</button>
+    <button class="nav-btn" data-tab="orders">Orders</button>
+    <button class="nav-btn" data-tab="items">Items</button>
+    <button class="nav-btn" data-tab="expenses">Expenses</button>
+    <button class="nav-btn" data-tab="people">People</button>
+    <button class="nav-btn" data-tab="manage">Manage</button>
+  </nav>
+
+  <!-- PRODUCT MODAL -->
+  <div id="product-modal" class="backdrop hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="product-modal-title">New Product</h3>
+      </div>
+      <div class="modal-body">
+        <div id="image-preview" class="image-preview">Tap to upload image</div>
+        <input type="file" id="product-image" accept="image/*" hidden />
+
+        <div class="form-row">
+          <label>Name*</label>
+          <input id="prod-name" />
+        </div>
+
+        <div class="form-row">
+          <label>Price (₹)*</label>
+          <input id="prod-price" type="number" min="0" step="0.01" />
+        </div>
+
+        <div class="form-row">
+          <label>Category</label>
+          <input id="prod-category" />
+        </div>
+
+        <div class="form-row">
+          <label>Stock</label>
+          <input id="prod-stock" type="number" min="0" step="1" />
+        </div>
+
+        <div class="form-row">
+          <label>Low stock alert at</label>
+          <input id="prod-low" type="number" min="0" step="1" />
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-delete-product" class="btn danger hidden">Delete</button>
+          <button id="btn-save-product" class="btn primary">Save</button>
+          <button id="btn-close-product-modal" class="btn">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- Category Modal -->
-<div id="category-modal" class="hidden modal">
-  <div class="modal-box">
-    <h2>Manage Categories</h2>
-    <div id="category-list"></div>
-    <input id="new-category" placeholder="New category..."/>
-    <button id="add-category-btn">Add</button>
-    <button id="close-category-modal">Close</button>
-  </div>
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
