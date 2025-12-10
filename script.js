@@ -34,14 +34,13 @@ const loginContainer = document.getElementById("login-container");
 const appContainer = document.getElementById("app-container");
 
 async function initApp() {
-  if (typeof loginContainer !== "undefined" && loginContainer) {
-    loginContainer.classList.add("hidden");
-  }
-  if (typeof appContainer !== "undefined" && appContainer) {
+  const appContainer = document.getElementById("app-container");
+  if (appContainer) {
     appContainer.classList.remove("hidden");
   }
   await loadAllData();
 }
+
 
 async function loadAllData() {
   await Promise.all([
@@ -53,16 +52,6 @@ async function loadAllData() {
   ]);
   updateCartUI();
 }
-
-// Login Logic
-if (error) {
-    const errEl = document.getElementById("login-error");
-    errEl.textContent = error.message;
-    errEl.classList.remove("hidden");
-  } else {
-    initApp();
-  }
-});
 
 // Theme Toggle
 document.getElementById("theme-toggle").onclick = () => {
