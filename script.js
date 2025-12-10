@@ -34,17 +34,13 @@ const loginContainer = document.getElementById("login-container");
 const appContainer = document.getElementById("app-container");
 
 async function initApp() {
-  const {
-    data: { session },
-  } = await db.auth.getSession();
-  if (session) {
+  if (typeof loginContainer !== "undefined" && loginContainer) {
     loginContainer.classList.add("hidden");
-    appContainer.classList.remove("hidden");
-    loadAllData();
-  } else {
-    loginContainer.classList.remove("hidden");
-    appContainer.classList.add("hidden");
   }
+  if (typeof appContainer !== "undefined" && appContainer) {
+    appContainer.classList.remove("hidden");
+  }
+  await loadAllData();
 }
 
 async function loadAllData() {
@@ -59,12 +55,7 @@ async function loadAllData() {
 }
 
 // Login Logic
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value.trim();
-  const password = document.getElementById("login-password").value.trim();
-  const { data, error } = await db.auth.signInWithPassword({ email, password });
-  if (error) {
+if (error) {
     const errEl = document.getElementById("login-error");
     errEl.textContent = error.message;
     errEl.classList.remove("hidden");
@@ -72,11 +63,6 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     initApp();
   }
 });
-
-document.getElementById("btn-logout").onclick = async () => {
-  await db.auth.signOut();
-  window.location.reload();
-};
 
 // Theme Toggle
 document.getElementById("theme-toggle").onclick = () => {
